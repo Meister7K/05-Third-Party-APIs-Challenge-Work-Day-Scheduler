@@ -12,15 +12,17 @@
 $(function () {
 
 // ! global variables
-var hoursArray;
 var currentTime = dayjs();
+var currentMin = dayjs().format('m');
 var currentHour = dayjs().format('H');
 var hourBlock = $('.time-block');
 var writtenNotes = $('textarea');
+var notes;
+
  $.each(writtenNotes, () =>{
     this.value ="";
   });
-var saveBtn = $('saveBtn');
+console.log(writtenNotes);
   // TODO: Add a listener for click events on the save button. This code should
   // use the id in the containing time-block as a key to save the user input in
   // local storage. HINT: What does `this` reference in the click listener
@@ -29,6 +31,9 @@ var saveBtn = $('saveBtn');
   // useful when saving the description in local storage?
 
 
+function saveNotes(notes){
+    localStorage.setItem('notes',JSON.stringify(notes));
+ };
 
 
   // TODO: Add code to apply the past, present, or future class to each time
@@ -45,7 +50,7 @@ function updateScheduleTime(){
     }
   })
 };
-updateScheduleTime()
+  updateScheduleTime();
   
   // block by comparing the id to the current hour. HINTS: How can the id
   // attribute of each time-block be used to conditionally add or remove the
@@ -55,42 +60,67 @@ updateScheduleTime()
   // TODO: Add code to get any user input that was saved in localStorage and set
   // the values of the corresponding textarea elements. HINT: How can the id
   // attribute of each time-block be used to do this?
+
+  // ! Issue saving data
  function readLocalStorage(){
   var notes = localStorage.getItem('notes');
   if(notes){
-    notes =JSON.parse(notes);
+    notes = JSON.parse(notes);
   } else {
     notes = [];
   }
+  console.log(notes);
   return notes;
  };
 
- function saveNotes(notes){
-    localStorage.setItem('notes',JSON.stringify(notes));
- };
+ 
 
  function printNotes(){
   writtenNotes.empty();
   var notes = readLocalStorage();
-
-
   $.each(notes, () =>{
-    note = notes[i];
-
+    note = notes;
+    writtenNotes.text(note);
   })
- }
+  return;
+ };
+
+
+
+ function addNewNotes(e){
+  e.preventDefault();
+  var newNote = notes;
+  var notes = readLocalStorage();
+notes.push(newNote);
+  saveNotes(notes);
+  printNotes();
+ };
 
   //
   // TODO: Add code to display the current date in the header of the page.
-// add interval every sec to update 
+  // add interval every sec to update 
  // !Timer
  function updateTime(){
-   $('#currentDay').text(currentTime.format('ddd, MMM D, YYYY h:mm:ss'));
+  
+   $('#currentDay').text(currentTime.format('ddd, MMM D, YYYY h:mm A'));
    
   };
-updateTime();
-setInterval(updateTime, 1000);
 
+updateTime();
+
+setInterval(()=> {
+  currentTime = dayjs();
+  if (currentMin < currentTime.format('m') ){
+    updateTime();
+  } else if (currentMin > currentTime.format('m')){
+    {
+      updateScheduleTime();
+      $('#currentDay').text(currentTime.format('ddd, MMM D, YYYY h:mm A'));
+    }
+  }
+}, 1000);
+
+printNotes();
 
 });
 
