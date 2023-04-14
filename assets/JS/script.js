@@ -9,21 +9,49 @@
 
 // the code isn't run until the browser has finished rendering all the elements
 // in the html.
-$(function () {
+// $(function () {
 
 // ! global variables
 var currentTime = dayjs();
 var currentMin = dayjs().format('m');
-var currentHour = dayjs().format('H');
+var currentHour; 
 var hourBlock = $('.time-block');
-var value;
-var time;
-var writtenNotes = $('textarea');
+var hoursArray;
+
+var textArea = $('textarea');
 // var notes;
 
-//  $.each(writtenNotes, () =>{
-//     this.value ="";
-//   });
+ $.each(textArea, () => {
+    this.value ="";
+  });
+
+  if(localStorage.getItem('localNotes')){
+    hoursArray = JSON.parse(localStorage.getItem('localNotes'))
+  } else {
+    hoursArray = [];
+  };
+
+  function updateStorage(){
+    var buttonIndex = (Number($(this).attr('id'))-1);
+    console.log(buttonIndex);
+
+    if(textArea[buttonIndex].value.trim() != '') {
+      hoursArray[buttonIndex] = {
+        time: $('.hour')[buttonIndex].textContent.trim(),
+        note: textArea[buttonIndex].value
+      }
+      localStorage.setItem('localNotes', JSON.stringify(hoursArray));
+    }
+    console.log(hoursArray);
+  };
+
+  function pullLocalNotes(){
+    $.each(hoursArray, function (i){
+      if(hoursArray[i]){
+        textArea[i].value = hoursArray[i].note;
+      }
+    })
+  };
 // console.log(writtenNotes);
   // TODO: Add a listener for click events on the save button. This code should
   // use the id in the containing time-block as a key to save the user input in
@@ -32,42 +60,44 @@ var writtenNotes = $('textarea');
   // time-block containing the button that was clicked? How might the id be
   // useful when saving the description in local storage?
 
-$('.saveBtn').on('click', saveText)
+// function saveText() {
+//   var value = $(this).siblings('.description').val();
+//   var time = $(this).parent().attr('id');
+//   localStorage.setItem(time, value);
+// }
+// $('#hour-01 .description').val(localStorage.getItem('hour-1'));
+  // readLocalStorage()
+// function readLocalStorage(){
+//   var notes = localStorage.getItem(time,value);
 
+//   if(time,value){
+//     notes = push(notes);
+//   } else {
+//     notes = [];
+//   }
 
-function saveText() {
-  var value = $(this).siblings('.description').val();
-  var time = $(this).parent().attr('id');
-  console.log($(this))
-  console.log(value);
-  saveToLocal(time, value);
-}
+//   return notes;
+//  };
 
-function readLocalStorage(){
-  var notes = localStorage.getItem(value,time);
-  console.log(notes);
-  if(time,value){
-    notes = push(notes);
-  } else {
-    notes = [];
-  }
-  console.log(notes);
-  return notes;
- };
+// function saveToLocal(time, value){
+//     localStorage.setItem(time, value);
+    
+   
+//  };
 
-function saveToLocal(time, value){
-    localStorage.setItem(time,value);
- };
+//  function printFromLocalStorage(){
+//   var notes ='';
+// notes = readLocalStorage();
+// for (i = 1; i< localStorage.length; i++){
+//   if (localStorage.key[i] == time){
+//     $(this.writtenNotes).append.text(value[i])
+//   } else{
+//     return '';
+//   }
 
- function print (){
-writtenNotes.empty();
-var oldNotes = readLocalStorage();
-oldNotes.push(writtenNotes);
-saveToLocal(writtenNotes);
-}
-print();
+//   }
+//  }
 
- 
 
   // TODO: Add code to apply the past, present, or future class to each time
  
@@ -82,9 +112,8 @@ function updateScheduleTime(){
       $(this).addClass('future');
     }
   })
+  currentHour = currentTime.format('H');
 };
-  updateScheduleTime();
-  
   // block by comparing the id to the current hour. HINTS: How can the id
   // attribute of each time-block be used to conditionally add or remove the
   // past, present, and future classes? How can Day.js be used to get the
@@ -93,43 +122,40 @@ function updateScheduleTime(){
   // TODO: Add code to get any user input that was saved in localStorage and set
   // the values of the corresponding textarea elements. HINT: How can the id
   // attribute of each time-block be used to do this?
-
-  // ! Issue saving data
- 
- 
- 
-
   //
   // TODO: Add code to display the current date in the header of the page.
   // add interval every min to update 
  // !Timer
+updateTime();
  function updateTime(){
-  
-   $('#currentDay').text(currentTime.format('ddd, MMM D, YYYY h:mm A'));
+   $('#currentDay').text(currentTime.format('ddd, MMM D, YYYY h:mm:ss A'));
    
   };
 
-updateTime();
-
 setInterval(()=> {
   currentTime = dayjs();
-  if (currentMin < currentTime.format('m') ){
+  if (currentMin <= currentTime.format('m') ){
     updateTime();
     updateScheduleTime();
   } else if (currentMin > currentTime.format('m')){
     
       updateTime();
       updateScheduleTime();
-      $('#currentDay').text(currentTime.format('ddd, MMM D, YYYY h:mm A'));
+      $('#currentDay').text(currentTime.format('ddd, MMM D, YYYY h:mm:ss A'));
     
   }
 }, 1000);
 
 
-});
+
+updateScheduleTime();
+pullLocalNotes();
+$('button').click(updateStorage);
+// });
 
 
-// TODO: add an alert function that calls an alert when a saved text area class is set to present.
+
+
 
 // ! criteria
 // GIVEN I am using a daily planner to create a schedule
